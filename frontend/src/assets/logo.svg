@@ -1,0 +1,19 @@
+<svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="EMSI Portal logo">
+  <defs>
+    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E40AF" />
+      <stop offset="100%" stop-color="#0EA5E9" />
+    </linearGradient>
+    <linearGradient id="checkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7DD3FC" />
+      <stop offset="100%" stop-color="#22D3EE" />
+    </linearGradient>
+    <filter id="glow" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="0" stdDeviation="10" flood-color="#7DD3FC" flood-opacity="0.35" />
+    </filter>
+  </defs>
+  <rect width="240" height="240" rx="48" fill="#050816" />
+  <path d="M120 24C82 24 52 46 52 78v44c0 44 28 83 68 96 40-13 68-52 68-96V78c0-32-30-54-68-54z" fill="url(#shieldGrad)" stroke="#0E4B8B" stroke-width="8" filter="url(#glow)" />
+  <path d="M78 110c0-3 2-5 5-5h24c3 0 5 2 5 5v0l10 16c2 3 6 4 9 2l34-34c3-3 3-8 0-11-3-3-8-3-11 0l-28 28-9-14c-1-2-3-3-5-3H83c-3 0-5 2-5 5 0 1 0 2 1 3l8 12c2 3 6 4 9 2l28-28c3-3 3-8 0-11-3-3-8-3-11 0l-22 22-7-10c-1-2-3-3-5-3h-1c-3 0-5 2-5 5z" fill="url(#checkGrad)" />
+  <circle cx="120" cy="120" r="86" fill="none" stroke="#93C5FD" stroke-width="6" opacity="0.35" />
+</svg>
