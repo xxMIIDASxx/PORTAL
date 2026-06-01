@@ -36,6 +36,57 @@ class ReportCard(models.Model):
     def __str__(self):
         return f"{self.student.username} - {self.academic_year} {self.semester}"
 
+    def recalculate_average(self):
+        from collections import defaultdict
+        
+        grades = self.grades.all()
+        if not grades.exists():
+            self.general_average = None
+            self.save(update_fields=['general_average'])
+            return
+
+        # Group grades by subject
+        subject_grades = defaultdict(list)
+        for g in grades:
+            subject_grades[g.subject].append(g)
+
+        subject_averages = []
+        for subject, g_list in subject_grades.items():
+            cc_vals = []
+            exam_vals = []
+            other_vals = []
+            
+            for g in g_list:
+                eval_lower = g.evaluation_type.lower()
+                if 'cc' in eval_lower or 'controle' in eval_lower or 'contrôle' in eval_lower:
+                    cc_vals.append(g.value)
+                elif 'examen' in eval_lower or 'ef' in eval_lower or 'exam' in eval_lower or 'final' in eval_lower:
+                    exam_vals.append(g.value)
+                else:
+                    other_vals.append(g.value)
+            
+            if cc_vals and exam_vals:
+                cc_avg = sum(cc_vals) / len(cc_vals)
+                exam_avg = sum(exam_vals) / len(exam_vals)
+                sub_avg = cc_avg * 0.3 + exam_avg * 0.7
+            elif cc_vals:
+                sub_avg = sum(cc_vals) / len(cc_vals)
+            elif exam_vals:
+                sub_avg = sum(exam_vals) / len(exam_vals)
+            elif other_vals:
+                sub_avg = sum(other_vals) / len(other_vals)
+            else:
+                continue
+                
+            subject_averages.append(sub_avg)
+            
+        if subject_averages:
+            self.general_average = round(sum(subject_averages) / len(subject_averages), 2)
+        else:
+            self.general_average = 0.0
+            
+        self.save(update_fields=['general_average'])
+
 class Grade(models.Model):
     report_card = models.ForeignKey(ReportCard, on_delete=models.CASCADE, related_name='grades')
     subject = models.CharField(max_length=100)
@@ -93,6 +144,7 @@ class Course(models.Model):
     name = models.CharField(max_length=200)
     code = models.CharField(max_length=50, blank=True, null=True)
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_courses')
+    teacher = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_courses', limit_choices_to={'role': 'teacher'})
 
     def __str__(self):
         return self.name
@@ -122,3 +174,17 @@ class Attendance(models.Model):
     def __str__(self):
         status = 'Present' if self.present else 'Absent'
         return f"{self.student.username} - {status} for {self.session}"
+
+
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
+
+@receiver(post_save, sender=Grade)
+def update_report_card_average_on_save(sender, instance, **kwargs):
+    if instance.report_card:
+        instance.report_card.recalculate_average()
+
+@receiver(post_delete, sender=Grade)
+def update_report_card_average_on_delete(sender, instance, **kwargs):
+    if instance.report_card:
+        instance.report_card.recalculate_average()

@@ -90,14 +90,25 @@ class UserViewSet(viewsets.ModelViewSet):
         
         # Create profile
         from .models import StudentProfile, TeacherProfile, AdminProfile
+        import json
         if role == 'student':
             filiere = request.data.get('filiere', 'General')
             annee_etude = request.data.get('annee_etude', 1)
-            StudentProfile.objects.create(user=user, filiere=filiere, annee_etude=annee_etude, numero_etudiant=matricule)
+            tutor_name = request.data.get('tutor_name', None)
+            StudentProfile.objects.create(user=user, filiere=filiere, annee_etude=annee_etude, numero_etudiant=matricule, tutor_name=tutor_name)
         elif role == 'teacher':
-            TeacherProfile.objects.create(user=user, departement='General', matiere='General')
+            departement = request.data.get('departement', 'General')
+            matiere = request.data.get('matiere', [])
+            classes = request.data.get('classes', [])
+            TeacherProfile.objects.create(
+                user=user,
+                departement=departement,
+                matiere=json.dumps(matiere) if isinstance(matiere, list) else matiere,
+                classes=json.dumps(classes) if isinstance(classes, list) else classes
+            )
         elif role == 'admin':
-            AdminProfile.objects.create(user=user, service='General')
+            service = request.data.get('service', 'General')
+            AdminProfile.objects.create(user=user, service=service)
             
         return Response(UserSerializer(user).data, status=201)
 

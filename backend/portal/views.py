@@ -47,8 +47,16 @@ class NotificationViewSet(viewsets.ModelViewSet):
     serializer_class = NotificationSerializer
 
 class ReportCardViewSet(viewsets.ModelViewSet):
-    queryset = ReportCard.objects.all()
     serializer_class = ReportCardSerializer
+
+    def get_queryset(self):
+        queryset = ReportCard.objects.all()
+        student_id = self.request.query_params.get('student')
+        if student_id:
+            queryset = queryset.filter(student__id=student_id)
+        elif self.request.user.is_authenticated and self.request.user.role == 'student':
+            queryset = queryset.filter(student=self.request.user)
+        return queryset
 
 class GradeViewSet(viewsets.ModelViewSet):
     queryset = Grade.objects.all()
@@ -93,13 +101,9 @@ class GradeViewSet(viewsets.ModelViewSet):
                 defaults={'value': val}
             )
             
-            # Recalculate average for the report card
-            all_grades = Grade.objects.filter(report_card=rc)
-            if all_grades.exists():
-                avg = sum(g.value for g in all_grades) / all_grades.count()
-                rc.general_average = round(avg, 2)
-                rc.save()
-                
+            # Recalculate average for the report card using weighted logic
+            rc.recalculate_average()
+            
             updated_count += 1
 
         return Response({'message': f'Successfully updated {updated_count} grades'}, status=status.HTTP_200_OK)
@@ -163,17 +167,52 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 student_id=student_id,
                 defaults={'present': present}
             )
+
+            try:
+                session = Session.objects.get(id=session_id)
+                if not present:
+                    Absence.objects.update_or_create(
+                        student_id=student_id,
+                        subject=session.course.name,
+                        date_seance=session.date,
+                        defaults={'is_present': False}
+                    )
+                else:
+                    Absence.objects.filter(
+                        student_id=student_id,
+                        subject=session.course.name,
+                        date_seance=session.date
+                    ).delete()
+            except Session.DoesNotExist:
+                pass
+
             updated_count += 1
 
         return Response({'message': f'Successfully recorded {updated_count} attendance records'}, status=status.HTTP_200_OK)
 
 class AbsenceViewSet(viewsets.ModelViewSet):
-    queryset = Absence.objects.all().order_by('-date_seance')
     serializer_class = AbsenceSerializer
 
+    def get_queryset(self):
+        queryset = Absence.objects.all().order_by('-date_seance')
+        student_id = self.request.query_params.get('student')
+        if student_id:
+            queryset = queryset.filter(student__id=student_id)
+        elif self.request.user.is_authenticated and self.request.user.role == 'student':
+            queryset = queryset.filter(student=self.request.user)
+        return queryset
+
 class DocumentRequestViewSet(viewsets.ModelViewSet):
-    queryset = DocumentRequest.objects.all().order_by('-created_at')
     serializer_class = DocumentRequestSerializer
+
+    def get_queryset(self):
+        queryset = DocumentRequest.objects.all().order_by('-created_at')
+        student_id = self.request.query_params.get('student')
+        if student_id:
+            queryset = queryset.filter(student__id=student_id)
+        elif self.request.user.is_authenticated and self.request.user.role == 'student':
+            queryset = queryset.filter(student=self.request.user)
+        return queryset
 
 class ClassScheduleViewSet(viewsets.ModelViewSet):
     queryset = ClassSchedule.objects.all()
