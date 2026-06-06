@@ -637,3 +637,20 @@ td:last-child {
 .text-success { color: var(--success); }
 .text-danger { color: var(--danger); }
 .text-warning { color: var(--warning); }
+
+/* ================================================
+   LOGO HOVER
+   ================================================ */
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.logo-container:hover {
+  opacity: 0.85;
+  transform: scale(1.02);
+}

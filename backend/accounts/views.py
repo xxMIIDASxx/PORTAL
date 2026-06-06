@@ -153,6 +153,23 @@ class UserViewSet(viewsets.ModelViewSet):
         
         return Response(UserSerializer(user).data, status=200)
 
+    @action(detail=False, methods=['post'])
+    def remove_profile_picture(self, request):
+        email = request.data.get('email')
+        
+        if not email:
+            return Response({'error': 'Please provide email'}, status=400)
+            
+        try:
+            user = CustomUser.objects.get(email=email)
+        except CustomUser.DoesNotExist:
+            return Response({'error': 'User not found'}, status=404)
+            
+        user.profile_picture = None
+        user.save()
+        
+        return Response(UserSerializer(user).data, status=200)
+
     @action(detail=True, methods=['patch'])
     def assign_modules(self, request, pk=None):
         user = self.get_object()

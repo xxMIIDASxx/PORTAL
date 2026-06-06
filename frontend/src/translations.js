@@ -61,6 +61,8 @@ export const translations = {
     submit_attendance: "Valider les présences",
     attendance_success: "Présences enregistrées avec succès !",
     profile_picture_success: "Photo de profil mise à jour !",
+    remove_picture: "Supprimer la photo",
+    picture_removed_success: "Photo de profil supprimée !",
     // Settings Modal
     account_settings: "Paramètres du Compte",
     change_password: "Changer le mot de passe",
@@ -195,6 +197,8 @@ export const translations = {
     submit_attendance: "Submit Attendance",
     attendance_success: "Attendance recorded successfully!",
     profile_picture_success: "Profile picture updated successfully!",
+    remove_picture: "Remove Picture",
+    picture_removed_success: "Profile picture removed successfully!",
     // Settings Modal
     account_settings: "Account Settings",
     change_password: "Change Password",

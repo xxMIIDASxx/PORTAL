@@ -47,14 +47,20 @@ function TopBar({ user, onLogout, theme, setTheme }) {
 
     const formData = new FormData();
     formData.append('profile_picture', file);
+    formData.append('email', user.email);
     setLoading(true);
     setUploadError('');
     setUploadSuccess('');
 
     try {
-      await api.patch('/accounts/users/me/', formData, {
+      const res = await api.post('/accounts/users/upload_profile_picture/', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
+      
+      if (res.data) {
+        localStorage.setItem('user', JSON.stringify(res.data));
+      }
+      
       setUploadSuccess(t('profile_picture_success'));
       window.location.reload();
     } catch (err) {
@@ -64,18 +70,41 @@ function TopBar({ user, onLogout, theme, setTheme }) {
     }
   };
 
+  const handleRemoveProfilePicture = async () => {
+    setLoading(true);
+    setUploadError('');
+    setUploadSuccess('');
+    
+    try {
+      const res = await api.post('/accounts/users/remove_profile_picture/', {
+        email: user.email
+      });
+      if (res.data) {
+        localStorage.setItem('user', JSON.stringify(res.data));
+      }
+      setUploadSuccess(t('picture_removed_success'));
+      window.location.reload();
+    } catch (err) {
+      setUploadError('Error removing picture');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="demo-topbar">
       {/* Brand / Logo */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+      <div 
+        className="logo-container" 
+        onClick={() => window.location.href = '/'}
+      >
         <img 
           src={logo} 
           alt="EMSI" 
           style={{ 
             height: '46px', 
             objectFit: 'contain',
-            transition: 'transform 0.3s ease',
-            cursor: 'pointer'
+            transition: 'transform 0.3s ease'
           }} 
         />
         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
@@ -316,6 +345,16 @@ function TopBar({ user, onLogout, theme, setTheme }) {
                 >
                   {loading ? '...' : t('upload_new')}
                 </button>
+                {user.profile_picture && (
+                  <button 
+                    onClick={handleRemoveProfilePicture} 
+                    className="btn btn-danger" 
+                    style={{ width: '100%', justifyContent: 'center', marginTop: '0.75rem', padding: '0.65rem' }}
+                    disabled={loading}
+                  >
+                    {loading ? '...' : t('remove_picture')}
+                  </button>
+                )}
                 {uploadError && <p style={{ color: 'var(--danger)', marginTop: '0.5rem', fontSize: '0.82rem' }}>{uploadError}</p>}
                 {uploadSuccess && <p style={{ color: 'var(--success)', marginTop: '0.5rem', fontSize: '0.82rem' }}>{uploadSuccess}</p>}
               </div>
