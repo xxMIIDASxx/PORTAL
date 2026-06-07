@@ -51,4 +51,4 @@ The frontend will be available at `http://localhost:5173`.
 <div align="center">
   <p>EMSI PORTAL</p>
   <p>Made by: Owais BAKKALI, Amjad AHRRAR, Amine HABZ, Bachar DOUKHANA, Bilal MESBAHI.</p>
-</div>
+</div>"# EMSI-PORTAL" 
